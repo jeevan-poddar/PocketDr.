@@ -7,8 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Syringe, Calendar, CheckCircle2,
   Clock, AlertTriangle, Plus, FileCheck, Loader2, X, Save,
-  FileText, CalendarDays, AlertCircle, Hourglass, Trash2
+  FileText, CalendarDays, AlertCircle, Hourglass, Trash2, MapPin
 } from 'lucide-react';
+import { getVaccinationCenters, type VaccinationCenter } from '@/app/actions/admin';
 
 // Initialize Supabase Client
 const supabase = createClient(
@@ -24,6 +25,11 @@ type Vaccine = {
   date_administered: string; // Planned Start
   due_date: string;          // Deadline
   notes?: string;
+  vaccination_centers?: {    // Relation
+    name: string;
+    city: string;
+    state: string;
+  };
 };
 
 // Derived Frontend Status
@@ -47,6 +53,11 @@ export default function VaccinationPage() {
   const [newPlannedDate, setNewPlannedDate] = useState('');
   const [newNotes, setNewNotes] = useState('');
 
+  // Center Selection State
+  const [centers, setCenters] = useState<VaccinationCenter[]>([]);
+  const [selectedCenter, setSelectedCenter] = useState<string>('');
+  const [cityFilter, setCityFilter] = useState('');
+
   // --- HELPER: DATE FORMATTER ---
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
@@ -68,7 +79,7 @@ export default function VaccinationPage() {
 
       const { data, error } = await supabase
         .from('vaccinations')
-        .select('*')
+        .select('*, vaccination_centers ( name, city, state )')
         .eq('user_id', user.id)
         .order('due_date', { ascending: true });
 
@@ -82,6 +93,15 @@ export default function VaccinationPage() {
 
     fetchVaccines();
   }, [router]);
+
+  // --- FETCH CENTERS ON MODAL OPEN ---
+  useEffect(() => {
+    if (isAddOpen) {
+      getVaccinationCenters().then(res => {
+        if (res.success) setCenters(res.centers);
+      });
+    }
+  }, [isAddOpen]);
 
   // --- LOGIC: CALCULATE STATUS ---
   const getDisplayStatus = (v: Vaccine): DisplayStatus => {
@@ -153,7 +173,8 @@ export default function VaccinationPage() {
         status: 'pending',
         date_administered: newPlannedDate,
         next_due_date: newDueDate,
-        notes: newNotes || null
+        notes: newNotes || null,
+        center_id: selectedCenter || null
       };
 
       const { data, error } = await supabase
@@ -171,6 +192,8 @@ export default function VaccinationPage() {
         setNewDueDate('');
         setNewPlannedDate('');
         setNewNotes('');
+        setSelectedCenter('');
+        setCityFilter('');
       }
     }
     setIsSaving(false);
@@ -196,7 +219,7 @@ export default function VaccinationPage() {
 
           <button
             onClick={() => setIsAddOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full shadow-lg shadow-purple-600/20 hover:opacity-90 active:scale-95 transition-all text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-full shadow-lg shadow-purple-600/20 hover:opacity-90 active:scale-95 transition-all text-sm font-medium"
           >
             <Plus className="w-4 h-4" /> Add Vaccine
           </button>
@@ -229,7 +252,7 @@ export default function VaccinationPage() {
                   relative px-6 py-2 rounded-xl text-sm font-medium transition-all capitalize z-10
                   ${filter === f
                     ? 'bg-white text-purple-600 shadow-sm text-shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700 hover:bg-white/30'}
+                    : 'text-slate-500 hover:text-purple-600 hover:bg-white/30'}
                 `}
               >
                 {f}
@@ -325,14 +348,23 @@ export default function VaccinationPage() {
                           </span>
                         </div>
                       </div>
+                      <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
+                        {/* Notes Row */}
+                        {vax.notes && (
+                          <div className="flex items-start gap-2 pt-1 text-sm text-slate-500 bg-slate-50/50 p-2 rounded-lg border border-slate-100">
+                            <FileText className="w-3.5 h-3.5 mt-0.5 opacity-50 shrink-0" />
+                            <p className="leading-snug text-xs md:text-sm">{vax.notes}</p>
+                          </div>
+                        )}
 
-                      {/* Notes Row */}
-                      {vax.notes && (
-                        <div className="flex items-start gap-2 pt-1 text-sm text-slate-500 bg-slate-50/50 p-2 rounded-lg border border-slate-100">
-                          <FileText className="w-3.5 h-3.5 mt-0.5 opacity-50 shrink-0" />
-                          <p className="leading-snug text-xs md:text-sm">{vax.notes}</p>
-                        </div>
-                      )}
+                        {/* Center Info */}
+                        {vax.vaccination_centers && (
+                          <div className="flex items-center gap-2 pt-1 text-xs text-slate-600 font-medium">
+                            <MapPin className="w-3.5 h-3.5" />
+                            <span>{vax.vaccination_centers.name}, {vax.vaccination_centers.city}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Action Button */}
@@ -382,7 +414,7 @@ export default function VaccinationPage() {
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
               className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-white/50"
             >
-              <div className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 border-b border-purple-100">
+              <div className="p-6 bg-purple-50 border-b border-purple-100">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-bold text-slate-800">Add New Vaccine</h3>
                   <button onClick={() => setIsAddOpen(false)} className="p-2 hover:bg-white rounded-full transition-colors text-slate-400 hover:text-red-500">
@@ -432,6 +464,43 @@ export default function VaccinationPage() {
                   </div>
                 </div>
 
+                {/* Vaccination Center Selection */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-slate-600">Vaccination Center <span className="text-xs font-normal text-slate-400">(Optional)</span></label>
+
+                  {/* City Filter */}
+                  <div className="flex gap-2 mb-2">
+                    <div className="relative flex-1">
+                      <MapPin className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Filter by City..."
+                        value={cityFilter}
+                        onChange={e => setCityFilter(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-purple-500 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <select
+                    value={selectedCenter}
+                    onChange={(e) => setSelectedCenter(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all outline-none text-slate-800 text-sm appearance-none"
+                  >
+                    <option value="">-- Select Center --</option>
+                    {centers
+                      .filter(c => !cityFilter || c.city.toLowerCase().includes(cityFilter.toLowerCase()))
+                      .map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} ({c.city}, {c.state})
+                        </option>
+                      ))}
+                  </select>
+                  {cityFilter && centers.filter(c => c.city.toLowerCase().includes(cityFilter.toLowerCase())).length === 0 && (
+                    <p className="text-[10px] text-red-500 mt-1 pl-1">No centers found in "{cityFilter}"</p>
+                  )}
+                </div>
+
                 <div className="space-y-1.5">
                   <label className="text-sm font-bold text-slate-600">Notes <span className="text-xs font-normal text-slate-400">(Optional)</span></label>
                   <textarea
@@ -447,7 +516,7 @@ export default function VaccinationPage() {
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="flex items-center justify-center gap-2 w-full py-3.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-bold shadow-lg shadow-purple-600/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 w-full py-3.5 bg-purple-600 text-white rounded-xl font-bold shadow-lg shadow-purple-600/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
                   >
                     {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> Save Record</>}
                   </button>

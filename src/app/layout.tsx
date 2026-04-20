@@ -1,17 +1,27 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthProvider";
 import ClientLayout from "@/components/ClientLayout";
 
 import ConsoleCleanup from "@/components/ConsoleCleanup";
 
-const inter = Inter({ subsets: ["latin"] });
+const poppins = Poppins({ 
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-poppins",
+});
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "PocketDr. - Your AI Health Assistant",
   description: "Your personalized medical assistant powered by AI",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
 export default function RootLayout({
@@ -24,7 +34,7 @@ export default function RootLayout({
       <head>
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossOrigin="" />
       </head>
-      <body className={`${inter.className} min-h-screen`}>
+      <body className={`${poppins.className} ${poppins.variable} min-h-screen`}>
         <script
           dangerouslySetInnerHTML={{
             __html: `

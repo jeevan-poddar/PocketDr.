@@ -63,7 +63,7 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: finalInput,
-          history: newMessages.map(m => ({
+          history: messages.map(m => ({
             role: m.role === 'user' ? 'user' : 'model',
             parts: [{ text: m.content }]
           }))
@@ -75,7 +75,12 @@ export default function ChatPage() {
           const data = await response.json();
           throw new Error(data.text || "Rate limit exceeded");
         }
-        throw new Error('Failed to fetch response');
+        let serverError = 'Failed to fetch response';
+        try {
+          const errData = await response.json();
+          if (errData.error) serverError = errData.error;
+        } catch (e) {}
+        throw new Error(serverError);
       }
 
       const data = await response.json();
@@ -207,7 +212,7 @@ export default function ChatPage() {
             /* ZERO STATE */
             <div className="flex-1 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-500">
               <div className="relative w-48 h-48 md:w-56 md:h-56 mb-6">
-                <div className="absolute inset-0 bg-gradient-to-tr from-purple-400/30 to-blue-400/30 rounded-full blur-[60px] animate-pulse" />
+                <div className="absolute inset-0 bg-purple-400/30 rounded-full blur-[60px] animate-pulse" />
                 <img
                   src="/robo.png"
                   alt="Aiva"
@@ -247,7 +252,7 @@ export default function ChatPage() {
                     <div className={`
                       max-w-[90%] md:max-w-[80%] p-5 rounded-2xl text-sm md:text-base leading-relaxed shadow-sm relative
                       ${msg.role === 'user'
-                        ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-tr-none'
+                        ? 'bg-purple-600 text-white rounded-tr-none'
                         : 'bg-white/80 backdrop-blur-md border border-white/60 text-slate-800 rounded-tl-none'}
                     `}>
                       {msg.role === 'assistant' && (
@@ -286,7 +291,7 @@ export default function ChatPage() {
 
       {/* --- INPUT AREA (Fixed at Bottom with Absolute Position) --- */}
       {/* FIX: Absolute positioning guarantees it sticks to the bottom edge */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 w-full px-4 pb-4 pt-4 md:px-6 md:pb-6 bg-gradient-to-t from-[#F4F1FF] via-[#F4F1FF]/80 to-transparent">
+      <div className="absolute bottom-0 left-0 right-0 z-20 w-full px-4 pb-4 pt-4 md:px-6 md:pb-6 bg-[#F4F1FF]">
         <div className="max-w-3xl mx-auto">
           <form
             onSubmit={(e) => handleSubmit(e)}
@@ -302,7 +307,7 @@ export default function ChatPage() {
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className="p-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg shadow-purple-600/20 hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all shrink-0"
+              className="p-3 bg-purple-600 text-white rounded-xl shadow-lg shadow-purple-600/20 hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all shrink-0"
             >
               <Send className="w-5 h-5" />
             </button>

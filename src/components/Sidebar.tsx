@@ -83,10 +83,10 @@ export default function Sidebar() {
       {/* Brand Logo */}
       <div className="p-8 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
+          <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
             <LayoutGrid size={20} />
           </div>
-          <span className="text-2xl font-extrabold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <span className="text-2xl font-extrabold text-purple-600">
             PocketDr.
           </span>
         </div>
@@ -103,7 +103,7 @@ export default function Sidebar() {
               key={link.href}
               href={link.href}
               className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group font-medium ${isActive
-                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/25 translate-x-1'
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/25 translate-x-1'
                 : 'text-slate-500 hover:bg-purple-50 hover:text-purple-600'
                 }`}
             >
@@ -125,7 +125,7 @@ export default function Sidebar() {
       <div className="p-4 mx-4 mb-6 border-t border-slate-100 pt-6">
         <Link href="/profile">
           <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-md transition-all cursor-pointer group">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm shadow-inner shrink-0 group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-inner shrink-0 group-hover:scale-105 transition-transform">
               {initials}
             </div>
             <div className="flex-1 min-w-0">

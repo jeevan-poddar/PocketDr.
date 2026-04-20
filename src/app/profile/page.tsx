@@ -151,7 +151,7 @@ export default function ProfilePage() {
           className="bg-white/70 backdrop-blur-xl border border-white/60 rounded-3xl shadow-xl overflow-hidden"
         >
           {/* Cover / Banner */}
-          <div className="h-32 bg-gradient-to-r from-teal-500 to-blue-500 relative">
+          <div className="h-32 bg-purple-500 relative">
             <div className="absolute -bottom-12 left-8">
               <div className="w-24 h-24 rounded-full bg-white p-1 shadow-md">
                 <div className="w-full h-full rounded-full bg-slate-100 flex items-center justify-center text-3xl font-bold text-slate-400">

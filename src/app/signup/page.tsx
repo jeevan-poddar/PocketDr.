@@ -117,7 +117,7 @@ export default function SignupPage() {
           </motion.div>
 
           <div className="space-y-2 relative z-10">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600 leading-tight">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-purple-600 leading-tight">
               Join PocketDr
             </h1>
             <p className="text-lg text-slate-600 font-medium">
@@ -165,7 +165,7 @@ export default function SignupPage() {
               // SIGNUP FORM
               <>
                 <div className="text-center mb-8">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 text-white mb-4 shadow-lg shadow-purple-500/30">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-purple-500 text-white mb-4 shadow-lg shadow-purple-500/30">
                     <Sparkles className="w-6 h-6" />
                   </div>
                   <h2 className="text-2xl font-bold text-slate-800">Create your account</h2>
@@ -230,7 +230,7 @@ export default function SignupPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3.5 px-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl font-medium shadow-lg shadow-purple-600/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70"
+                    className="w-full py-3.5 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium shadow-lg shadow-purple-600/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70"
                   >
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                       <>

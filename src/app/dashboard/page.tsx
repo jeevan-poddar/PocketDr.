@@ -87,7 +87,7 @@ export default function DashboardPage() {
         {/* Header */}
         <header className="flex justify-between items-center mb-12">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
+            <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
               <Sparkles className="w-6 h-6" />
             </div>
             <span className="text-xl font-bold text-slate-800 tracking-tight">PocketDr.</span>
@@ -114,7 +114,7 @@ export default function DashboardPage() {
 
             <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight">
               Good Morning,<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
+              <span className="text-purple-600">
                 {userName}
               </span>
             </h1>
@@ -124,7 +124,7 @@ export default function DashboardPage() {
             </p>
 
             <Link href="/chat">
-              <button className="group mt-4 flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl font-bold shadow-xl shadow-purple-600/30 hover:scale-105 active:scale-95 transition-all mx-auto md:mx-0">
+              <button className="group mt-4 flex items-center gap-3 px-8 py-4 bg-purple-600 text-white rounded-2xl font-bold shadow-xl shadow-purple-600/30 hover:scale-105 active:scale-95 transition-all mx-auto md:mx-0">
                 <MessageSquarePlus className="w-6 h-6" />
                 Start New Consultation
                 <ChevronRight className="w-5 h-5 opacity-70 group-hover:translate-x-1 transition-transform" />
@@ -139,7 +139,7 @@ export default function DashboardPage() {
             transition={{ delay: 0.2 }}
             className="flex-1 relative w-full max-w-md h-[400px]"
           >
-            <div className="absolute inset-0 bg-gradient-to-tr from-purple-400/20 to-blue-400/20 rounded-full blur-[80px]" />
+            <div className="absolute inset-0 bg-purple-400/20 rounded-full blur-[80px]" />
             <img
               src="/PocketDr. avatar.png"
               alt="Aiva Avatar"

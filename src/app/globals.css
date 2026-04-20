@@ -16,7 +16,7 @@
 body {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-poppins), sans-serif;
   min-height: 100vh;
 }
 
@@ -56,12 +56,9 @@ body {
 /* Brand utilities */
 @layer utilities {
   .bg-brand-gradient {
-    background: linear-gradient(135deg, #2db3a0 0%, #00509d 100%);
+    background-color: #9333ea; /* purple-600 */
   }
   .text-brand-gradient {
-    background: linear-gradient(135deg, #2db3a0 0%, #00509d 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #9333ea; /* purple-600 */
   }
 }

@@ -1,6 +1,7 @@
 "use server";
 
 import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
 export interface AdminAlert {
@@ -108,10 +109,102 @@ export async function createOfficialAlert(data: {
     if (error) throw error;
 
     revalidatePath("/map");
-    revalidatePath("/dashboard");
     return { success: true };
   } catch (error: any) {
     console.error("Error creating official alert:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// --- VACCINATION CENTER ACTIONS ---
+
+export interface VaccinationCenter {
+  id: string;
+  name: string;
+  state: string;
+  city: string;
+  address?: string;
+  created_at?: string;
+}
+
+export async function getVaccinationCenters(filters?: { name?: string; city?: string; state?: string }) {
+  try {
+    let query = (supabase.from("vaccination_centers") as any).select("*").order("name", { ascending: true });
+
+    if (filters?.name) {
+      query = query.ilike("name", `%${filters.name}%`);
+    }
+    if (filters?.city) {
+      query = query.ilike("city", `%${filters.city}%`);
+    }
+    if (filters?.state) {
+      query = query.ilike("state", `%${filters.state}%`);
+    }
+    
+    // If no filters are applied, or if only specific filters are needed, we can optimize.
+    // For now, simple ilike search.
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    
+    return { success: true, centers: data as VaccinationCenter[] };
+
+  } catch (error: any) {
+    console.error("Error fetching centers:", error);
+    return { success: false, error: error.message, centers: [] };
+  }
+}
+
+// Helper to get admin client
+function getAdminClient() {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceRoleKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY is not defined");
+  }
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    serviceRoleKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  );
+}
+
+export async function addVaccinationCenter(data: { name: string; state: string; city: string; address?: string }) {
+  try {
+    const supabaseAdmin = getAdminClient();
+    const { error } = await supabaseAdmin
+      .from("vaccination_centers")
+      .insert([data]);
+
+    if (error) throw error;
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error adding center:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteVaccinationCenter(id: string) {
+  try {
+    const supabaseAdmin = getAdminClient();
+    const { error } = await supabaseAdmin
+      .from("vaccination_centers")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error deleting center:", error);
     return { success: false, error: error.message };
   }
 }

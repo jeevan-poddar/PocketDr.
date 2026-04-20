@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from '@supabase/supabase-js';
 import dynamic from 'next/dynamic';
-import { loginAdmin } from '@/app/actions/admin';
+import { loginAdmin, getVaccinationCenters, addVaccinationCenter, deleteVaccinationCenter, type VaccinationCenter } from '@/app/actions/admin';
 import {
   ShieldCheck, XCircle, CheckCircle, Radio, MapPin, Activity,
   AlertTriangle, RefreshCw, Lock, Key, Trash2, LogOut, Loader2
@@ -59,6 +59,13 @@ export default function AdminDashboard() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // --- VACCINATION CENTERS STATE ---
+  const [activeTab, setActiveTab] = useState<'alerts' | 'centers'>('alerts');
+  const [centers, setCenters] = useState<VaccinationCenter[]>([]);
+  const [centerForm, setCenterForm] = useState({ name: "", state: "", city: "", address: "" });
+  const [isCenterSubmitting, setIsCenterSubmitting] = useState(false);
+  const [centerFilter, setCenterFilter] = useState({ name: "", city: "", state: "" });
+
   // --- LOGIN LOGIC ---
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -100,8 +107,48 @@ export default function AdminDashboard() {
 
     setPendingAlerts((pending as Alert[]) || []);
     setActiveAlerts((active as Alert[]) || []);
+    
+    // Fetch Centers
+    const centersResult = await getVaccinationCenters();
+    if (centersResult.success) {
+      setCenters(centersResult.centers);
+    }
+
     setLoading(false);
   }
+
+  // --- CENTER ACTIONS ---
+  async function handleAddCenter(e: React.FormEvent) {
+    e.preventDefault();
+    setIsCenterSubmitting(true);
+    const res = await addVaccinationCenter(centerForm);
+    if (res.success) {
+        alert("Vaccination Center Added");
+        setCenterForm({ name: "", state: "", city: "", address: "" });
+        loadData();
+    } else {
+        alert("Error: " + res.error);
+    }
+    setIsCenterSubmitting(false);
+  }
+
+  async function handleDeleteCenter(id: string) {
+    if(!confirm("Are you sure you want to delete this center?")) return;
+    const res = await deleteVaccinationCenter(id);
+    if (res.success) {
+        setCenters(prev => prev.filter(c => c.id !== id));
+    } else {
+        alert("Error deleting: " + res.error);
+    }
+  }
+  
+  // Filtered Centers
+  const filteredCenters = centers.filter(c => {
+    const matchName = c.name.toLowerCase().includes(centerFilter.name.toLowerCase());
+    const matchCity = c.city.toLowerCase().includes(centerFilter.city.toLowerCase());
+    const matchState = c.state.toLowerCase().includes(centerFilter.state.toLowerCase());
+    return matchName && matchCity && matchState;
+  });
 
   // --- HANDLE MAP CLICK (For Broadcast) ---
   const handleMapPick = (lat: number, lng: number) => {
@@ -247,8 +294,27 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
           {/* Left Col: Management */}
-          <div className="xl:col-span-2 space-y-8">
+          <div className="xl:col-span-2 space-y-6">
 
+            {/* TAB SWITCHER */}
+            <div className="flex p-1 bg-white rounded-xl border border-slate-200 shadow-sm w-fit">
+                <button 
+                    onClick={() => setActiveTab('alerts')}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'alerts' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+                >
+                    Alerts Management
+                </button>
+                <button 
+                    onClick={() => setActiveTab('centers')}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'centers' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+                >
+                    Vaccination Centers
+                </button>
+            </div>
+
+            {/* --- ALERTS CONTENT --- */}
+            {activeTab === 'alerts' && (
+            <>
             {/* SECTION 1: PENDING */}
             <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
               <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-orange-50/50">
@@ -341,12 +407,71 @@ export default function AdminDashboard() {
                 </table>
               )}
             </section>
+            </>
+            )}
+
+            {/* --- CENTERS CONTENT --- */}
+            {activeTab === 'centers' && (
+             <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-orange-50/50">
+                    <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800">
+                        <MapPin size={20} className="text-orange-500" />
+                        Vaccination Centers
+                        <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-xs font-extrabold">{filteredCenters.length}</span>
+                    </h2>
+                </div>
+                
+                {/* Filters */}
+                <div className="p-4 border-b border-slate-100 bg-white/50">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <input type="text" placeholder="Filter Name" className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 transition-all" 
+                         value={centerFilter.name} onChange={e => setCenterFilter({...centerFilter, name: e.target.value})} />
+                        <input type="text" placeholder="Filter City" className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 transition-all" 
+                         value={centerFilter.city} onChange={e => setCenterFilter({...centerFilter, city: e.target.value})} />
+                         <input type="text" placeholder="Filter State" className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 transition-all" 
+                         value={centerFilter.state} onChange={e => setCenterFilter({...centerFilter, state: e.target.value})} />
+                    </div>
+                </div>
+
+                <div className="divide-y divide-slate-100 max-h-[600px] overflow-auto">
+                    {filteredCenters.map(center => (
+                        <div key={center.id} className="p-5 flex flex-col md:flex-row gap-4 items-start md:items-center hover:bg-slate-50 transition-colors">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-orange-100 text-orange-700">
+                                        Verified Center
+                                    </span>
+                                    <span className="text-xs text-slate-400 font-medium flex items-center gap-1">
+                                        <MapPin size={12} /> {center.city}, {center.state}
+                                    </span>
+                                </div>
+                                <h3 className="font-bold text-slate-900 truncate text-base">{center.name}</h3>
+                                <p className="text-sm text-slate-500 truncate mt-0.5">{center.address || "No specific address provided"}</p>
+                            </div>
+                            <div className="flex gap-2 shrink-0">
+                                <button onClick={() => handleDeleteCenter(center.id)} 
+                                    className="px-4 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold flex items-center gap-2 transition-all">
+                                    <Trash2 size={14} /> Delete
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                     {filteredCenters.length === 0 && (
+                        <div className="p-12 text-center text-slate-400">
+                            <MapPin size={40} className="mx-auto mb-3 text-slate-200" />
+                            <p>No vaccination centers found matching your filters.</p>
+                        </div>
+                    )}
+                </div>
+            </section>
+            )}
 
           </div>
 
           {/* Right Col: Forms & Map */}
           <div className="space-y-6">
-            {/* Broadcast Form */}
+            {/* Broadcast Form (Only show on Alerts Tab) */}
+            {activeTab === 'alerts' && (
             <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl shadow-slate-900/10">
               <h2 className="text-xl font-bold flex items-center gap-2 mb-6">
                 <Radio size={20} className="text-red-400 animate-pulse" />
@@ -414,6 +539,45 @@ export default function AdminDashboard() {
                 </button>
               </form>
             </div>
+            )}
+
+            {/* Add Center Form (Only show on Centers Tab) */}
+            {activeTab === 'centers' && (
+                <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl shadow-slate-900/10">
+                    <h2 className="text-xl font-bold flex items-center gap-2 mb-6 text-white">
+                        <MapPin size={20} className="text-red-400" />
+                        Add New Center
+                    </h2>
+                    <form onSubmit={handleAddCenter} className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Center Name</label>
+                            <input type="text" required placeholder="e.g. City Hospital" className="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-white placeholder:text-white/30 focus:outline-none focus:bg-white/20 transition-all text-sm"
+                            value={centerForm.name} onChange={e => setCenterForm({...centerForm, name: e.target.value})} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                             <div>
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">State</label>
+                                <input type="text" required placeholder="State" className="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-white placeholder:text-white/30 focus:outline-none focus:bg-white/20 transition-all text-sm"
+                                value={centerForm.state} onChange={e => setCenterForm({...centerForm, state: e.target.value})} />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">City</label>
+                                <input type="text" required placeholder="City" className="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-white placeholder:text-white/30 focus:outline-none focus:bg-white/20 transition-all text-sm"
+                                value={centerForm.city} onChange={e => setCenterForm({...centerForm, city: e.target.value})} />
+                            </div>
+                        </div>
+                         <div>
+                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Full Address</label>
+                            <textarea rows={2} placeholder="Building, Street..." className="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-white placeholder:text-white/30 focus:outline-none focus:bg-white/20 transition-all text-sm"
+                            value={centerForm.address} onChange={e => setCenterForm({...centerForm, address: e.target.value})} />
+                        </div>
+                        <button type="submit" disabled={isCenterSubmitting} className="w-full bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 mt-4 shadow-lg shadow-red-600/20 transition-all">
+                             {isCenterSubmitting ? <RefreshCw size={20} className="animate-spin" /> : <MapPin size={20} />}
+                            Add Center
+                        </button>
+                    </form>
+                </div>
+            )}
           </div>
 
         </div>

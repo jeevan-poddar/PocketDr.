@@ -110,7 +110,7 @@ return (
     {/* 1. Header (Fixed height) */}
     <div className="px-6 py-4 border-b border-slate-100 bg-white/50 flex justify-between items-center shrink-0">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-blue-600 flex items-center justify-center text-white shadow-lg">
+        <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-lg">
           <Sparkles size={20} />
         </div>
         <div>
@@ -143,7 +143,7 @@ return (
         />
         <button
           onClick={handleSubmit}
-          className="absolute right-2 p-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg hover:scale-105 transition-transform"
+          className="absolute right-2 p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl shadow-lg hover:scale-105 transition-transform"
         >
           <Send size={20} />
         </button>

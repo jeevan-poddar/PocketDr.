@@ -104,6 +104,7 @@ export interface Database {
           next_due_date: string | null
           due_date: string | null
           notes: string | null
+          center_id: string | null
           created_at: string
         }
         Insert: {
@@ -115,6 +116,7 @@ export interface Database {
           next_due_date?: string | null
           due_date?: string | null
           notes?: string | null
+          center_id?: string | null
           created_at?: string
         }
         Update: {
@@ -126,6 +128,33 @@ export interface Database {
           next_due_date?: string | null
           due_date?: string | null
           notes?: string | null
+          center_id?: string | null
+          created_at?: string
+        }
+      }
+      vaccination_centers: {
+        Row: {
+          id: string
+          name: string
+          state: string
+          city: string
+          address: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          state: string
+          city: string
+          address?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          state?: string
+          city?: string
+          address?: string | null
           created_at?: string
         }
       }

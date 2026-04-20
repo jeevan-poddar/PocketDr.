@@ -1,8 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
-// We try 1.5 Pro first for better reasoning, then Flash for speed
-const MODELS_TO_TRY = ["gemini-1.5-pro", "gemini-2.0-flash", "gemini-pro"];
+// We try 2.5 Pro first for better reasoning, then Flash for speed
+const MODELS_TO_TRY = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-flash-latest", "gemini-pro-latest"];
 
 const AIVA_SYSTEM_PROMPT = `# IDENTITY & PURPOSE
 You are **Aiva**, a specialized Health Awareness Assistant for "Pocket Dr".
